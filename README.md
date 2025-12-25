@@ -106,8 +106,7 @@
 - Mohamed Khalaf  
 - Ahmed Mohamed Khalaf  
 - John Hany  
-- Mohamed Ali  
-
+- Mohamed Ali Foda
 ---
 
 ## Project Structure
