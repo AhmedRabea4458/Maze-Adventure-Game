@@ -1,3 +1,4 @@
+import model.Difficulty;
 import model.Level;
 import model.Player;
 
@@ -14,11 +15,12 @@ public class MazePanel extends JPanel implements KeyListener {
     Level level;
     int rows;
     int cols;
+    private int moves = 0;
+    private int combo = 0;
 
     private static final int CELL_SIZE = 30;
     private static final int WALL_THICKNESS = 6;
     private static final int OFFSET = 20;
-
     private final Player player;
     List<int[]> path;
 
@@ -32,16 +34,16 @@ public class MazePanel extends JPanel implements KeyListener {
 
     private final Image goalImage;
     private Timer animationTimer;
+    private int bestScore;
 
 
     public MazePanel(RightSidePanel rightSidePanel) {
 
         this.rightSidePanel = rightSidePanel;
 
-        level = new Level(1, "Easy", AppColors.LEVEL_EASY);
+        level = new Level(1, "Easy", AppColors.LEVEL_EASY, Difficulty.EASY);
         rows = level.getRows();
         cols = level.getCols();
-
 
 
         generator = new MazeGenerator(rows, cols);
@@ -53,7 +55,6 @@ public class MazePanel extends JPanel implements KeyListener {
 
 
         goalImage = new ImageIcon("goal.png").getImage();
-
 
 
         animationTimer = new Timer(16, e -> {
@@ -70,20 +71,34 @@ public class MazePanel extends JPanel implements KeyListener {
     }
 
 
-
-
-
-
-
     public void generateNewMaze() {
-        path = null;
+        Difficulty analyzed;
+        do{
+            generator = new MazeGenerator(rows, cols);
+            generator.generateMaze();
+            generateRandomGoal();
+            openExitWall();
+             analyzed =MazeDifficultyAnalyzer.analyzeDifficulty(
+                    rows,
+                    cols,
+                    generator.wallsTop, generator.wallsBottom,
+                    generator.wallsLeft,
+                    generator.wallsRight,
+                    0,0,
+                    goalRow,goalCol
 
-        generator.generateMaze();
+            );
+
+
+        }while ( analyzed != level.getDifficulty());
+
         player.resetPosition(0, 0);
+        path = null;
+        moves = 0;
+        combo = 0;
 
-        generateRandomGoal();
-        openExitWall();
-
+        repaint();
+        requestFocusInWindow();
         repaint();
         requestFocusInWindow();
     }
@@ -111,17 +126,13 @@ public class MazePanel extends JPanel implements KeyListener {
         this.rows = level.getRows();
         this.cols = level.getCols();
 
-        generator = new MazeGenerator(rows, cols);
-        generator.generateMaze();
 
-        generateRandomGoal();
-        openExitWall();
         player.resetPosition(0, 0);
 
         rightSidePanel.setLevelText(level.getLevelTitle());
         rightSidePanel.setLevelColor(level.getColor());
+        generateNewMaze();
 
-        path = null;
 
         setPreferredSize(new Dimension(cols * CELL_SIZE + 40, rows * CELL_SIZE + 40));
         revalidate();
@@ -227,37 +238,63 @@ public class MazePanel extends JPanel implements KeyListener {
         int key = e.getKeyCode();
 
         if (key == KeyEvent.VK_UP) {
+
             if (player.moveUp(generator.wallsTop)) {
+                moves++;
+                combo++;
+                rightSidePanel.onCombo(combo);
+                rightSidePanel.onPlayerMove();
                 SoundManager.play(Sound.MOVE);
                 player.animateTo(player.getRow() - 1, player.getCol());
             } else {
+                combo = 0;
+                rightSidePanel.resetCombo();
                 SoundManager.play(Sound.ERROR);
             }
         }
 
         if (key == KeyEvent.VK_DOWN) {
             if (player.moveDown(generator.wallsBottom, rows)) {
+                combo++;
+                rightSidePanel.onCombo(combo);
+                moves++;
+                rightSidePanel.onPlayerMove();
                 SoundManager.play(Sound.MOVE);
                 player.animateTo(player.getRow() + 1, player.getCol());
             } else {
+                combo = 0;
+                rightSidePanel.resetCombo();
                 SoundManager.play(Sound.ERROR);
             }
         }
 
         if (key == KeyEvent.VK_LEFT) {
             if (player.moveLeft(generator.wallsLeft)) {
+                moves++;
+                combo++;
+                rightSidePanel.onCombo(combo);
+                rightSidePanel.onPlayerMove();
                 SoundManager.play(Sound.MOVE);
+
                 player.animateTo(player.getRow(), player.getCol() - 1);
             } else {
+                combo = 0;
+                rightSidePanel.resetCombo();
                 SoundManager.play(Sound.ERROR);
             }
         }
 
         if (key == KeyEvent.VK_RIGHT) {
             if (player.moveRight(generator.wallsRight, cols)) {
+                moves++;
+                combo++;
+                rightSidePanel.onCombo(combo);
+                rightSidePanel.onPlayerMove();
                 SoundManager.play(Sound.MOVE);
                 player.animateTo(player.getRow(), player.getCol() + 1);
             } else {
+                combo = 0;
+                rightSidePanel.resetCombo();
                 SoundManager.play(Sound.ERROR);
             }
         }
@@ -266,8 +303,13 @@ public class MazePanel extends JPanel implements KeyListener {
         repaint();
     }
 
-    @Override public void keyTyped(KeyEvent e) {}
-    @Override public void keyReleased(KeyEvent e) {}
+    @Override
+    public void keyTyped(KeyEvent e) {
+    }
+
+    @Override
+    public void keyReleased(KeyEvent e) {
+    }
 
 
     private void generateRandomGoal() {
@@ -287,32 +329,43 @@ public class MazePanel extends JPanel implements KeyListener {
             rightSidePanel.stopGame();
             gameState = GameState.FINISHED;
             SoundManager.play(Sound.WIN);
+            navPanel.disableSolveBut();
+            navPanel.enableLevelMenu();
 
-            boolean again = CustomMessage.showDialog(
-                    this,
-                    "🎉 You Win!",
-                    "Score : "+String.valueOf(rightSidePanel.getScore()),
-                    "trophy.png",
-                    "ok",
-                    null,
-                    AppColors.DIALOG_WIN
+            rightSidePanel.applyWinBonus(
+                    rightSidePanel.getSeconds(),
+                    path != null,
+                    level
             );
 
-            if (again) {
-                SoundManager.play(Sound.CLICK);
+            int finalScore = rightSidePanel.getScore();
+            int oldBest = HighScoreManager.getBestScore(level);
 
-                rightSidePanel.stopGame();
-                gameState = GameState.NOT_STARTED;
-                navPanel.enableLevelMenu();
+            boolean isNewBest = finalScore > oldBest;
 
-            } else {
-                SoundManager.play(Sound.CLICK);
-                rightSidePanel.stopGame();
-                gameState = GameState.NOT_STARTED;
-                navPanel.enableLevelMenu();
+
+            if (isNewBest) {
+                HighScoreManager.saveBestScore(level,finalScore);
+                level.setBestScore(finalScore);
             }
+            int displayedBest = isNewBest ? finalScore : oldBest;
+
+
+            new GameSummaryDialog(
+                    (JFrame) SwingUtilities.getWindowAncestor(this),
+                    true,
+                    level,
+                    rightSidePanel.getSeconds(),
+                    moves,
+                    path != null,
+                    finalScore,
+                    rightSidePanel.getMaxCombo(),
+                    displayedBest,
+                    isNewBest
+            ).setVisible(true);
         }
     }
+
 
     private void onLoss() {
 
@@ -321,26 +374,25 @@ public class MazePanel extends JPanel implements KeyListener {
         gameState = GameState.FINISHED;
         SoundManager.play(Sound.LOSS);
 
-        boolean again = CustomMessage.showDialog(
-                this,
-                "You Lost!",
-                "You didn't reach the exit!",
-                null,
-                "ok",
-                null,
-                AppColors.DIALOG_LOSE
-        );
+        int best = HighScoreManager.getBestScore(level);
 
-        if (again) {
-            SoundManager.play(Sound.CLICK);
-            rightSidePanel.stopGame();
-            gameState = GameState.NOT_STARTED;
-            navPanel.enableLevelMenu();
-        } else {
-            SoundManager.play(Sound.CLICK);
-            navPanel.enableLevelMenu();
+        new GameSummaryDialog(
+                (JFrame) SwingUtilities.getWindowAncestor(this),
+                false,
+                level,
+                rightSidePanel.getSeconds(),
+                moves,
+                path != null,
+                rightSidePanel.getScore(),
+                rightSidePanel.getMaxCombo(),
+                best,
+                false
+        ).setVisible(true);
 
-
-        }
+        SoundManager.play(Sound.CLICK);
+        rightSidePanel.stopGame();
+        navPanel.enableLevelMenu();
     }
+
 }
+

@@ -1,3 +1,4 @@
+import model.Difficulty;
 import model.Level;
 
 import javax.swing.*;
@@ -5,6 +6,7 @@ import java.awt.*;
 
 public class navPanel extends JPanel {
     private static JMenu levelMenu = null;
+    private static JButton solveBtn = null;
     public navPanel(MazePanel mazePanel, RightSidePanel rightSidePanel) {
 
         setLayout(new BorderLayout());
@@ -36,7 +38,7 @@ public class navPanel extends JPanel {
 
         JButton startBtn = new JButton("Start Game");
         JButton newGameBtn = new JButton("New Game");
-        JButton solveBtn = new JButton("Solve");
+         solveBtn = new JButton("Solve");
         JButton exitBtn = new JButton("Exit");
 
         JButton muteBtn = new JButton(volumeOn);
@@ -113,6 +115,7 @@ public class navPanel extends JPanel {
         newGameBtn.addActionListener(e -> {
             SoundManager.play(Sound.CLICK);
             levelMenu.setEnabled(false);
+            solveBtn.setEnabled(true);
 
             boolean confirm = CustomMessage.showDialog(
                     this,
@@ -147,9 +150,11 @@ public class navPanel extends JPanel {
                     Color.WHITE
             );
 
-            mazePanel.setGameState(GameState.SOLVING);
-            rightSidePanel.stopGame();
             mazePanel.solve();
+            rightSidePanel.onSolveUsed();
+
+            mazePanel.requestFocusInWindow();
+
         });
 
         exitBtn.addActionListener(e -> {
@@ -172,7 +177,7 @@ public class navPanel extends JPanel {
 
         easyItem.addActionListener(e -> {
             SoundManager.play(Sound.SELECT);
-            mazePanel.setLevel(new Level(1, "Easy", AppColors.LEVEL_EASY));
+            mazePanel.setLevel(new Level(1, "Easy", AppColors.LEVEL_EASY, Difficulty.EASY));
             mazePanel.requestFocusInWindow();
             rightSidePanel.stopGame();
 
@@ -181,7 +186,7 @@ public class navPanel extends JPanel {
 
         mediumItem.addActionListener(e -> {
             SoundManager.play(Sound.SELECT);
-            mazePanel.setLevel(new Level(2, "Medium", AppColors.LEVEL_MEDIUM));
+            mazePanel.setLevel(new Level(2, "Medium", AppColors.LEVEL_MEDIUM,Difficulty.MEDIUM));
             mazePanel.requestFocusInWindow();
             rightSidePanel.stopGame();
 
@@ -191,7 +196,7 @@ public class navPanel extends JPanel {
 
         hardItem.addActionListener(e -> {
             SoundManager.play(Sound.SELECT);
-            mazePanel.setLevel(new Level(3, "Hard", AppColors.LEVEL_HARD));
+            mazePanel.setLevel(new Level(3, "Hard", AppColors.LEVEL_HARD,Difficulty.HARD));
             mazePanel.requestFocusInWindow();
             rightSidePanel.stopGame();
             startBtn.setEnabled(true);
@@ -223,5 +228,11 @@ public class navPanel extends JPanel {
     public static void enableLevelMenu() {
         levelMenu.setEnabled(true);
     }
+    public static void disableSolveBut() {solveBtn.setEnabled(false);}
+        public static void enableSolveBut() {
+            solveBtn.setEnabled(true);
+        }
+
+
 
 }
