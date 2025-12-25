@@ -18,7 +18,7 @@ public class CustomMessage {
         dialog.setLocationRelativeTo(parent);
         dialog.setModal(true);
         dialog.setLayout(new BorderLayout());
-
+        dialog.setBackground(AppColors.DIALOG_DEFAULT());
         JPanel panel = new JPanel(new BorderLayout());
         panel.setBackground(bgColor);
         dialog.add(panel);
@@ -38,7 +38,7 @@ public class CustomMessage {
         final boolean[] result = {false};
 
         JButton yesBtn = new JButton(yesText);
-        styleButton(yesBtn, AppColors.BTN_YES);
+        styleButton(yesBtn, AppColors.BTN_YES());
         yesBtn.addActionListener(e -> {
             result[0] = true;
             dialog.dispose();
@@ -47,7 +47,7 @@ public class CustomMessage {
 
         if (noText != null) {
             JButton noBtn = new JButton(noText);
-            styleButton(noBtn, AppColors.BTN_NO);
+            styleButton(noBtn, AppColors.BTN_NO());
             noBtn.addActionListener(e -> dialog.dispose());
             btnPanel.add(noBtn);
         }

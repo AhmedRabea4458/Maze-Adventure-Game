@@ -41,7 +41,7 @@ public class MazePanel extends JPanel implements KeyListener {
 
         this.rightSidePanel = rightSidePanel;
 
-        level = new Level(1, "Easy", AppColors.LEVEL_EASY, Difficulty.EASY);
+        level = new Level(1, "Easy", AppColors.LEVEL_EASY(), Difficulty.EASY);
         rows = level.getRows();
         cols = level.getCols();
 
@@ -96,7 +96,7 @@ public class MazePanel extends JPanel implements KeyListener {
         path = null;
         moves = 0;
         combo = 0;
-
+         rightSidePanel.setDifficulty(analyzed);
         repaint();
         requestFocusInWindow();
         repaint();
@@ -164,7 +164,7 @@ public class MazePanel extends JPanel implements KeyListener {
                 BasicStroke.CAP_ROUND,
                 BasicStroke.JOIN_ROUND
         ));
-        g2.setColor(AppColors.MAZE_WALL);
+        g2.setColor(AppColors.MAZE_WALL());
 
         for (int r = 0; r < rows; r++) {
             for (int c = 0; c < cols; c++) {
@@ -191,7 +191,7 @@ public class MazePanel extends JPanel implements KeyListener {
 
         if (path == null) return;
 
-        g2.setColor(AppColors.PATH_COLOR);
+        g2.setColor(AppColors.PATH());
 
         for (int i = 0; i < path.size() - 1; i++) {
 
@@ -217,7 +217,7 @@ public class MazePanel extends JPanel implements KeyListener {
         int y = (int) (player.getY() * CELL_SIZE) + OFFSET + margin;
 
 
-        g2.setColor(AppColors.PLAYER_COLOR);
+        g2.setColor(AppColors.PLAYER());
         g2.fillOval(x, y, size, size);
     }
 
@@ -392,6 +392,11 @@ public class MazePanel extends JPanel implements KeyListener {
         SoundManager.play(Sound.CLICK);
         rightSidePanel.stopGame();
         navPanel.enableLevelMenu();
+    }
+    public void applyTheme() {
+        setBackground(AppColors.BACKGROUND());
+
+        repaint();
     }
 
 }

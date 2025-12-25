@@ -11,7 +11,7 @@ class Main {
         frame.setSize(900, 600);
         frame.setLocationRelativeTo(null);
         frame.setLayout(new BorderLayout());
-
+frame.setBackground(AppColors.BACKGROUND());
 
 
 

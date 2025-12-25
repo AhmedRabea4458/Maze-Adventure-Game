@@ -51,8 +51,8 @@ public class GameSummaryDialog extends JDialog {
 
         JPanel root = new JPanel();
         root.setLayout(new BoxLayout(root, BoxLayout.Y_AXIS));
-        root.setBackground(Color.WHITE);
-        root.setBorder(BorderFactory.createEmptyBorder(20, 30, 20, 30));
+        root.setBackground(AppColors.DIALOG_DEFAULT());
+root.setBorder(BorderFactory.createEmptyBorder(20, 30, 20, 30));
 
         // ===== HEADER =====
         root.add(createHeader(isWin, mainColor));
@@ -87,6 +87,9 @@ public class GameSummaryDialog extends JDialog {
         root.add(ok);
 
         setContentPane(root);
+
+        SwingUtilities.updateComponentTreeUI(this);
+
     }
 
     // ================= HEADER =================
@@ -140,7 +143,11 @@ public class GameSummaryDialog extends JDialog {
     ) {
 
         JPanel card = new JPanel(new GridLayout(6, 2, 10, 6));
-        card.setBackground(new Color(243, 244, 246));
+        card.setBackground(
+                Theme.isDarkMode()
+                        ? new Color(40, 40, 40)
+                        : new Color(243, 244, 246)
+        );
         card.setBorder(BorderFactory.createCompoundBorder(
                 BorderFactory.createLineBorder(Color.LIGHT_GRAY),
                 BorderFactory.createEmptyBorder(10, 10, 10, 10)
@@ -190,6 +197,7 @@ public class GameSummaryDialog extends JDialog {
         panel.setOpaque(false);
 
         JLabel title = new JLabel("Achievements");
+        title.setForeground(AppColors.TEXT_PRIMARY());
         title.setFont(new Font("Arial", Font.BOLD, 16));
         title.setAlignmentX(Component.CENTER_ALIGNMENT);
         panel.add(title);
@@ -233,6 +241,7 @@ public class GameSummaryDialog extends JDialog {
         }
 
         JLabel l = new JLabel(text + ":");
+        l.setForeground(AppColors.TEXT_PRIMARY());
         l.setFont(new Font("Arial", Font.BOLD, 14));
         p.add(l);
 
@@ -242,6 +251,7 @@ public class GameSummaryDialog extends JDialog {
     private JLabel infoValue(String text) {
         JLabel l = new JLabel(text);
         l.setFont(new Font("Arial", Font.PLAIN, 14));
+        l.setForeground(AppColors.TEXT_PRIMARY());
         return l;
     }
 
@@ -257,6 +267,8 @@ public class GameSummaryDialog extends JDialog {
 
         JLabel l = new JLabel(text);
         l.setFont(new Font("Arial", Font.PLAIN, 14));
+        l.setForeground(AppColors.TEXT_PRIMARY());
+
         row.add(l);
 
         return row;

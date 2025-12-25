@@ -10,7 +10,7 @@ public class navPanel extends JPanel {
     public navPanel(MazePanel mazePanel, RightSidePanel rightSidePanel) {
 
         setLayout(new BorderLayout());
-        setBackground(AppColors.HEADER_COLOR);
+        setBackground(AppColors.HEADER());
         setBorder(BorderFactory.createEmptyBorder(8, 20, 8, 20));
 
         JPanel leftPanel = new JPanel(new FlowLayout(FlowLayout.LEFT, 10, 10));
@@ -35,6 +35,13 @@ public class navPanel extends JPanel {
         ImageIcon volumeOff = resizeIcon(
                 new ImageIcon(getClass().getResource("/icons/volume_off.png")), 24
         );
+        ImageIcon dark = resizeIcon(
+                new ImageIcon(getClass().getResource("/icons/dark.png")), 24
+        );
+        ImageIcon light = resizeIcon(
+                new ImageIcon(getClass().getResource("/icons/light.png")), 24
+        );
+
 
         JButton startBtn = new JButton("Start Game");
         JButton newGameBtn = new JButton("New Game");
@@ -46,11 +53,17 @@ public class navPanel extends JPanel {
         muteBtn.setFocusPainted(false);
         muteBtn.setContentAreaFilled(false);
         muteBtn.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
+        JButton DarkBtn = new JButton(dark);
+        DarkBtn.setBorderPainted(false);
+        DarkBtn.setFocusPainted(false);
+        DarkBtn.setContentAreaFilled(false);
+        DarkBtn.setCursor(Cursor.getPredefinedCursor(Cursor.HAND_CURSOR));
 
-        styleButton(startBtn, AppColors.BTN_START);
-        styleButton(newGameBtn, AppColors.BTN_NEW_GAME);
-        styleButton(solveBtn, AppColors.BTN_SOLVE);
-        styleButton(exitBtn, AppColors.BTN_EXIT);
+
+        styleButton(startBtn, AppColors.BTN_START());
+        styleButton(newGameBtn, AppColors.BTN_NEW_GAME());
+        styleButton(solveBtn, AppColors.BTN_SOLVE());
+        styleButton(exitBtn, AppColors.BTN_EXIT());
 
         solveBtn.setEnabled(false);
         newGameBtn.setEnabled(false);
@@ -61,21 +74,23 @@ public class navPanel extends JPanel {
         levelMenu = new JMenu("Choose Level");
         levelMenu.setFont(new Font("Arial", Font.BOLD, 14));
         levelMenu.setForeground(Color.WHITE);
-        levelMenu.setBackground(AppColors.LEVEL_MEDIUM);
+        levelMenu.setBackground(AppColors.LEVEL_MEDIUM());
         levelMenu.setOpaque(true);
 
         JMenuItem easyItem = new JMenuItem("Easy");
         JMenuItem mediumItem = new JMenuItem("Medium");
         JMenuItem hardItem = new JMenuItem("Hard");
 
-        styleMenuItem(easyItem, AppColors.LEVEL_EASY);
-        styleMenuItem(mediumItem, AppColors.LEVEL_MEDIUM);
-        styleMenuItem(hardItem, AppColors.LEVEL_HARD);
+        styleMenuItem(easyItem, AppColors.LEVEL_EASY());
+        styleMenuItem(mediumItem, AppColors.LEVEL_MEDIUM());
+        styleMenuItem(hardItem, AppColors.LEVEL_HARD());
 
         levelMenu.add(easyItem);
         levelMenu.add(mediumItem);
         levelMenu.add(hardItem);
         levelMenuBar.add(levelMenu);
+
+        rightPanel.add(DarkBtn);
 
         rightPanel.add(muteBtn);
         rightPanel.add(startBtn);
@@ -86,6 +101,22 @@ public class navPanel extends JPanel {
 
         add(leftPanel, BorderLayout.WEST);
         add(rightPanel, BorderLayout.EAST);
+        DarkBtn.addActionListener(e -> {
+            Theme.toggleDarkMode();
+            DarkBtn.setIcon(Theme.isDarkMode() ? dark : light);
+
+            applyTheme();
+            rightSidePanel.applyTheme();
+            mazePanel.applyTheme();
+
+            SwingUtilities.updateComponentTreeUI(
+                    SwingUtilities.getWindowAncestor(this)
+            );
+            mazePanel.requestFocusInWindow();
+
+        });
+
+
 
 
         muteBtn.addActionListener(e -> {
@@ -97,6 +128,7 @@ public class navPanel extends JPanel {
             }
             mazePanel.requestFocusInWindow();
         });
+
 
         startBtn.addActionListener(e -> {
             SoundManager.play(Sound.START);
@@ -177,7 +209,7 @@ public class navPanel extends JPanel {
 
         easyItem.addActionListener(e -> {
             SoundManager.play(Sound.SELECT);
-            mazePanel.setLevel(new Level(1, "Easy", AppColors.LEVEL_EASY, Difficulty.EASY));
+            mazePanel.setLevel(new Level(1, "Easy", AppColors.LEVEL_EASY(), Difficulty.EASY));
             mazePanel.requestFocusInWindow();
             rightSidePanel.stopGame();
 
@@ -186,7 +218,7 @@ public class navPanel extends JPanel {
 
         mediumItem.addActionListener(e -> {
             SoundManager.play(Sound.SELECT);
-            mazePanel.setLevel(new Level(2, "Medium", AppColors.LEVEL_MEDIUM,Difficulty.MEDIUM));
+            mazePanel.setLevel(new Level(2, "Medium", AppColors.LEVEL_MEDIUM(),Difficulty.MEDIUM));
             mazePanel.requestFocusInWindow();
             rightSidePanel.stopGame();
 
@@ -196,7 +228,7 @@ public class navPanel extends JPanel {
 
         hardItem.addActionListener(e -> {
             SoundManager.play(Sound.SELECT);
-            mazePanel.setLevel(new Level(3, "Hard", AppColors.LEVEL_HARD,Difficulty.HARD));
+            mazePanel.setLevel(new Level(3, "Hard", AppColors.LEVEL_HARD(),Difficulty.HARD));
             mazePanel.requestFocusInWindow();
             rightSidePanel.stopGame();
             startBtn.setEnabled(true);
@@ -232,6 +264,14 @@ public class navPanel extends JPanel {
         public static void enableSolveBut() {
             solveBtn.setEnabled(true);
         }
+    public void applyTheme() {
+        setBackground(AppColors.HEADER());
+
+        for (Component c : getComponents()) {
+            c.repaint();
+        }
+        repaint();
+    }
 
 
 
